@@ -1,0 +1,209 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{kfig}[2015/05/05 Kastor figure tools]
+
+\RequirePackage{calc}
+\RequirePackage{xparse}
+\RequirePackage{array}
+
+
+%%% lengths
+\newlength{\k@linew} % figure width
+\newlength{\kimgsep} % image separation
+\AtBeginDocument{\setlength{\kimgsep}{\tabcolsep}} % same as tabular by default
+\newcommand{\kskip}{\\[\kimgsep]}
+\newlength{\kimgw}
+\newlength{\kimgh}
+\newcommand{\kfigbefore}{\vspace{0pt}} % top image alignment
+\newcommand{\kfigafter}{}
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% CONSTANT RATIO %%%
+%%%%%%%%%%%%%%%%%%%%%%
+
+%%% image width evaluation
+\newcommand{\kautoimgw}[2][\linewidth]{%
+% #1 figure width
+% #2 number of images
+	\setlength{\k@linew}{#1-\kimgsep*(#2-1)}%
+	\setlength{\kimgw}{\k@linew/#2}%
+}
+
+%%% image tabular environment
+\newenvironment{kfig}[2][\linewidth]{%
+% #1 figure width
+% #2 number of images
+  \setlength{\tabcolsep}{.5\kimgsep}%
+  \kautoimgw[#1]{#2}%
+	\setkeys{Gin}{width=\kimgw}%
+  \renewcommand\arraystretch{0}%
+  \begin{tabular}{@{}*{#2}{>{\kfigbefore}p{\kimgw}}@{}}%
+}{%
+  \end{tabular}%
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% VARIABLE RATIO %%%
+%%%%%%%%%%%%%%%%%%%%%%
+
+%%% temporary figure width evaluation
+\newlength{\k@totalw}
+\newcommand{\k@inctotalw}[1]{\addtolength{\k@totalw}{#1\kimgw}}
+\DeclareDocumentCommand{\k@evaltotalw}{>{\SplitList{,}}m}
+{\ProcessList{#1}{\k@inctotalw}}
+
+%%% image width correction
+\newcommand{\kautoimgh}[3][\linewidth]{%
+% #1 figure width
+% #2 number of images
+% #3 image ratios
+  \kautoimgw[#1]{#2}%                      initialize with constant ratio
+  \setlength{\k@totalw}{0pt}%              initialize resulting figure width
+  \k@evaltotalw{#3}%                       evaluate resulting figure width
+  \setlength{\kimgh}{\kimgw*\ratio{\k@linew}{\k@totalw}}%
+}
+
+%\newcommand{\k@correctw}[1]{p{#1\kimgw*\ratio{\k@linew}{\k@totalw}}}
+%\DeclareDocumentCommand{\k@evalimgw}{>{\SplitList{,}}m}
+%{\ProcessList{#1}{\k@correctw}}
+
+%\newenvironment{kfig*}[3][\linewidth]{%
+%% #1 figure width
+%% #2 number of images
+%% #3 image ratios
+%  \setlength{\tabcolsep}{.5\kimgsep}%
+%  \kautoimgh[#1]{#2}{#3}%
+%	\setkeys{Gin}{height=\kimgh}%
+%  \begin{tabular}{@{}*{#2}{>{\kfigbefore}c}@{}}%
+%}{%
+%  \end{tabular}%
+%}
+
+\newcolumntype{\k@col}[1]{>{\kfigbefore}p{#1\kimgh}<{\kfigafter}}
+
+%%% 2 images
+\newenvironment{k@fig2}[3][\linewidth]{%
+% #1   figure width
+% #2,3 image ratios
+  \setlength{\tabcolsep}{.5\kimgsep}%
+  \kautoimgh[#1]{2}{#2,#3}%
+  \setkeys{Gin}{height=\kimgh}%
+  \renewcommand\arraystretch{0}%
+  \begin{tabular}{@{}
+  \k@col{#2}\k@col{#3}
+  @{}}%
+}{%
+  \end{tabular}%
+}
+
+%%% 3 images
+\newenvironment{k@fig3}[4][\linewidth]{%
+% #1    figure width
+% #2..4 image ratios
+  \setlength{\tabcolsep}{.5\kimgsep}%
+  \kautoimgh[#1]{3}{#2,#3,#4}%
+  \setkeys{Gin}{height=\kimgh}%
+  \renewcommand\arraystretch{0}%
+  \begin{tabular}{@{}
+  \k@col{#2}\k@col{#3}\k@col{#4}
+  @{}}%
+}{%
+  \end{tabular}%
+}
+
+%%% 4 images
+\newenvironment{k@fig4}[5][\linewidth]{%
+% #1    figure width
+% #2..5 image ratios
+  \setlength{\tabcolsep}{.5\kimgsep}%
+  \kautoimgh[#1]{4}{#2,#3,#4,#5}%
+  \setkeys{Gin}{height=\kimgh}%
+  \renewcommand\arraystretch{0}%
+  \begin{tabular}{@{}
+  \k@col{#2}\k@col{#3}\k@col{#4}\k@col{#5}
+  @{}}%
+}{%
+  \end{tabular}%
+}
+
+%%% 5 images
+\newenvironment{k@fig5}[6][\linewidth]{%
+% #1    figure width
+% #2..6 image ratios
+  \setlength{\tabcolsep}{.5\kimgsep}%
+  \kautoimgh[#1]{5}{#2,#3,#4,#5,#6}%
+  \setkeys{Gin}{height=\kimgh}%
+  \renewcommand\arraystretch{0}%
+  \begin{tabular}{@{}
+  \k@col{#2}\k@col{#3}\k@col{#4}\k@col{#5}
+  \k@col{#6}
+  @{}}%
+}{%
+  \end{tabular}%
+}
+
+%%% 6 images
+\newenvironment{k@fig6}[7][\linewidth]{%
+% #1    figure width
+% #2..7 image ratios
+  \setlength{\tabcolsep}{.5\kimgsep}%
+  \kautoimgh[#1]{6}{#2,#3,#4,#5,#6,#7}%
+  \setkeys{Gin}{height=\kimgh}%
+  \renewcommand\arraystretch{0}%
+  \begin{tabular}{@{}
+  \k@col{#2}\k@col{#3}\k@col{#4}\k@col{#5}
+  \k@col{#6}\k@col{#7}
+  @{}}%
+}{%
+  \end{tabular}%
+}
+
+%%% 7 images
+\newenvironment{k@fig7}[8][\linewidth]{%
+% #1    figure width
+% #2..8 image ratios
+  \setlength{\tabcolsep}{.5\kimgsep}%
+  \kautoimgh[#1]{7}{#2,#3,#4,#5,#6,#7,#8}%
+  \setkeys{Gin}{height=\kimgh}%
+  \renewcommand\arraystretch{0}%
+  \begin{tabular}{@{}
+  \k@col{#2}\k@col{#3}\k@col{#4}\k@col{#5}
+  \k@col{#6}\k@col{#7}\k@col{#8}
+  @{}}%
+}{%
+  \end{tabular}%
+}
+
+%%% 8 images
+\newenvironment{k@fig8}[9][\linewidth]{%
+% #1    figure width
+% #2..9 image ratios
+  \setlength{\tabcolsep}{.5\kimgsep}%
+  \kautoimgh[#1]{8}{#2,#3,#4,#5,#6,#7,#8,#9}%
+  \setkeys{Gin}{height=\kimgh}%
+  \renewcommand\arraystretch{0}%
+  \begin{tabular}{@{}
+  \k@col{#2}\k@col{#3}\k@col{#4}\k@col{#5}
+  \k@col{#6}\k@col{#7}\k@col{#8}\k@col{#9}
+  @{}}%
+}{%
+  \end{tabular}%
+}
+
+%%% automatic image counting
+\newcounter{k@imgnb}
+\newcommand{\k@incimgnb}[1]{\stepcounter{k@imgnb}}
+\DeclareDocumentCommand{\k@splitratios}{o >{\SplitList{,}}m}{%
+	\setcounter{k@imgnb}{0}%
+	\ProcessList{#2}{\k@incimgnb}% count images
+	\begin{k@fig\thek@imgnb}[#1]#2%
+}
+
+%%% auto
+\newenvironment{kfig*}[2][\linewidth]{%
+% #1 figure width
+% #2 image ratios
+  \k@splitratios[#1]{#2}%
+}{%
+  \end{k@fig\thek@imgnb}%
+}

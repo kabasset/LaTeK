@@ -1,0 +1,53 @@
+%%% Logo
+\usepackage{graphicx}
+\providecommand*{\kmath}{\rotatebox{-13}{K}\hskip-.5ex
+\textsc{m\hskip-.2ex
+a\hskip-.4ex
+t\hskip-.15ex
+h}\xspace}
+\providecommand*{\kmisc}{\rotatebox{-13}{K}\hskip-.5ex
+\textsc{m\hskip-.1ex
+i\hskip-.1ex
+s\hskip-.1ex
+c}\xspace}
+
+
+%%% Remark
+\newcommand{\rmq}[1][]{\noindent\textcolor{red}{$\blacktriangleright\;$#1}}
+
+\usepackage{framed}
+\usepackage{xcolor}
+
+%%% Simple code
+\newenvironment{kcode}{\nobreak%
+%\begin{framed}
+\begin{center}
+%\centering
+%\smallskip
+}{
+%\normalcolor
+\end{center}
+%\end{framed}
+\smallskip
+}
+
+%%% Code demonstration with captions
+\usepackage{array}
+\newenvironment{kdemo}[3][r@{:\quad}]{\nobreak%
+\begin{kcode}\nobreak
+\renewcommand{\arraystretch}{1.5}\nobreak
+\begin{tabular}{#1#2@{$\quad\leadsto\quad$}#3}
+}{
+\end{tabular}
+\end{kcode}
+}
+
+%%% Code demonstration without captions
+\newenvironment{kdemo*}[2]{\nobreak%
+\begin{kdemo}[]{#1}{#2}
+}{
+\end{kdemo}
+}
+
+%%% colored verbatim
+\newcommand{\emphverb}{\color{red}\verb}

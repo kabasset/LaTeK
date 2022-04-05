@@ -1,0 +1,476 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{kmath}[2015/06/04 Kastor math tools]
+
+\RequirePackage{amsmath} % used for text
+%\RequirePackage{amsfonts} %TODO
+\RequirePackage{amssymb} % used for mathbb, Box, nexists
+\RequirePackage{mleftright} % used for delimiters
+%\RequirePackage{mathtools} % for prescript transpose
+
+\RequirePackage{xparse} % used everywhere
+\RequirePackage{xspace} % used in text-math commands
+
+
+%%%%%%%%%%%%%%%
+%%% OPTIONS %%%
+%%%%%%%%%%%%%%%
+
+% intervals
+\newcommand*\k@intervlo{]}
+\newcommand*\k@intervlc{[}
+\newcommand*\k@intervro{[}
+\newcommand*\k@intervrc{]}
+\newcommand*\k@intervmid{,}
+\DeclareOption{intervparen}{%
+  \renewcommand*\k@intervlo{(}
+  \renewcommand*\k@intervro{)}
+}
+\DeclareOption{intervsemicolon}{%
+  \renewcommand*\k@intervmid{;}
+}
+
+% bold sets
+\newcommand*\k@boldset{\mathbf}
+\newcommand*\k@starpos[1]{^{#1}}
+\newcommand*\k@signpos[1]{_{#1}}
+\DeclareOption{setbb}{%
+  \renewcommand*\k@boldset{\mathbb} % amssymb
+}
+\DeclareOption{setstarb}{%
+  \renewcommand*\k@starpos[1]{_{#1}}
+  \renewcommand*\k@signpos[1]{{}_{#1}}
+}
+\DeclareOption{setsignt}{%
+  \renewcommand*\k@signpos[1]{{}^{#1}}
+}
+
+% conditioned delimiters
+\newcommand*\k@setmid{\mid}
+\newcommand*\k@probamid{\mid}
+\DeclareOption{setcomma}{%
+  \renewcommand*\k@setmid{\mathbin{,}}
+}
+\DeclareOption{setcolon}{%
+  \renewcommand*\k@setmid{\colon}
+}
+
+% constants
+\newcommand*\k@cst{\mathrm}
+\DeclareOption{cstit}{%
+  \renewcommand*\k@cst{}
+  \providecommand*\kpi{\pi}
+}
+
+% transpose
+% by Michael J. Downes (AMS), Google Groups, 2000
+%TODO rm subscript
+\DeclareOption{bourbakit}{%
+\DeclareRobustCommand{\k@prescript}[3]{%
+  \@mathmeasure\z@\scriptstyle{#1}%  put the sup in box 0
+  \@mathmeasure\tw@\scriptstyle{#2}% put the sub in box 2
+  \ifdim\wd\tw@>\wd\z@
+    \setbox\z@\hbox to\wd\tw@{\hfil\unhbox\z@}%
+  \else
+    \setbox\tw@\hbox to\wd\z@{\hfil\unhbox\tw@}%
+  \fi
+  % Do not let a preceding mathord symbol approach without any
+  % intervening space.
+  \mathop{}%
+  % Use \mathopen to suppress space between the prescripts and the
+  % base object even when the latter is not of type ord.
+  \mathopen{\vphantom{#3}}^{\box\z@}_{\box\tw@}%
+  #3%
+}
+  \providecommand*\ktranspose[1]{\k@prescript{\text{t}}{}{#1}}
+}
+
+% nabla, Laplace
+\DeclareOption{dalembert}{%
+  \providecommand*\k@nabla{\text{\raisebox{\depth}{$\bigtriangledown$}}}
+  \providecommand*\k@laplace{\bigtriangleup}
+}
+
+% real and imaginary parts
+\providecommand*\kRe{\operatorname{Re}}
+\providecommand*\kIm{\operatorname{Im}}
+\DeclareOption{reimgoth}{%
+  \renewcommand*\kRe{\operatorname{\Re}}
+  \renewcommand*\kIm{\operatorname{\Im}}
+}
+
+% quantifiers
+\DeclareMathOperator{\k@forall}{\forall} %TODO check limits
+\DeclareMathOperator{\k@exists}{\exists}
+\DeclareMathOperator{\k@existsone}{\exists!}
+\DeclareMathOperator{\k@nexists}{\nexists}
+\DeclareOption{quantifparen}{%
+  \providecommand*\k@quantif[2]
+  {\if\relax\detokenize{#2}#1\else\kparen{#1 #2}\mathop{}\fi}
+}
+
+\ProcessOptions\relax
+
+
+
+
+%%%%%%%%%%%%%%%%%
+%%% MATH/TEXT %%%
+%%%%%%%%%%%%%%%%%
+
+
+%%% ensuremath with xspace
+\DeclareRobustCommand*\k@ensuremath[1]{\ifmmode#1\else$#1$\xspace\fi}
+
+
+%%% new macro
+\DeclareDocumentCommand\newkmacro{m o o m}{% xparse
+  \IfNoValueTF{#2} % xparse
+    % no argument
+    {\newcommand#1{\k@ensuremath{#4}}}
+    % argument
+    {\IfNoValueTF{#3} % xparse
+      % argument without default
+      {\newcommand#1[#2]{\k@ensuremath{#4}}}
+      % argument with default
+      {\newcommand#1[#2][#3]{\k@ensuremath{#4}}}
+    }
+}
+
+
+%%% new function macro
+\newcommand*\newkfunc[2]{%
+  \DeclareDocumentCommand#1{O{} O{} D(){}} % xparse %TODO use G instead of D() -> braces
+  {\k@ensuremath{{#2}_{##1}^{##2}\kparen{##3}}}
+}
+
+
+
+
+%%%%%%%%%%%%%
+%%% BLOCS %%%
+%%%%%%%%%%%%%
+
+
+%%% auto nested size
+\providecommand*\knesteddelim{\delimitershortfall=-1pt} %TODO <1pt?
+\providecommand*\kdefaultdelim{\delimitershortfall=5pt}
+
+
+%%% delimiters
+\newcommand*\kdelim[3]{\if\relax\detokenize{#2}\relax\else\mleft#1{#2}\mright#3\fi} % mleftright
+
+
+%%% breakable list
+\newcommand*\k@listbefore{}
+\newcommand*\k@listitem[1]{%
+  \k@listbefore#1%
+  \renewcommand*\k@listbefore{%
+    ,\allowbreak%
+  }%
+}
+\DeclareDocumentCommand{\klist}{m >{\SplitList{,}}m m}{%
+  \renewcommand*\k@listbefore{}%
+  \k@ensuremath{%
+	  \mleft#1\vphantom{#2}\mright.\hskip-\nulldelimiterspace%
+	  \ProcessList{#2}{\k@listitem}%
+	  \hskip-\nulldelimiterspace\mleft.\vphantom{#2}\mright#3%
+  }%
+}
+
+
+%%% predefined pairs
+\newcommand\k@newdelim[3]{%
+  \DeclareDocumentCommand{#1}{s m}{%
+    \IfBooleanTF{##1}{%
+      \klist{#2}{##2}{#3}%
+    }{%
+      \kdelim{#2}{##2}{#3}%
+    }%
+  }%
+}
+\k@newdelim{\kparen}{(}{)}
+\k@newdelim{\kbrace}{\{}{\}}
+\k@newdelim{\kbracket}{[}{]}
+\k@newdelim{\kangle}{\langle}{\rangle}
+\k@newdelim{\kfloor}{\lfloor}{\rfloor}
+\k@newdelim{\kceil}{\lceil}{\rceil}
+\k@newdelim{\kvbar}{|}{|}
+\k@newdelim{\kvvbar}{\|}{\|}
+
+
+%%% intervals
+\newcommand*\k@interval[4]{\k@ensuremath{\kdelim{#1}{{#2}\k@intervmid{#3}}{#4}}}
+\providecommand*\kintervoo[2]{\k@interval{\k@intervlo}{#1}{#2}{\k@intervro}}
+\providecommand*\kintervoc[2]{\k@interval{\k@intervlo}{#1}{#2}{\k@intervrc}}
+\providecommand*\kintervcc[2]{\k@interval{\k@intervlc}{#1}{#2}{\k@intervrc}}
+\providecommand*\kintervco[2]{\k@interval{\k@intervlc}{#1}{#2}{\k@intervro}}
+
+
+%%% integer intervals
+%TODO check compatibility with triangleup/down
+%TODO see textcomp package, mathabx
+%\RequirePackage{pxfonts} %TODO this changes all the fonts!
+%\RequirePackage{mathabx} %TODO ugly \partial
+%\providecommand*\rrbracket{]}
+%\providecommand*\llbracket{[}
+%\providecommand*\kintoo[2]{\k@interval{\rrbracket}{#1}{#2}{\llbracket}}
+%\providecommand*\kintoc[2]{\k@interval{\rrbracket}{#1}{#2}{\rrbracket}}
+%\providecommand*\kintcc[2]{\k@interval{\llbracket}{#1}{#2}{\rrbracket}}
+%\providecommand*\kintco[2]{\k@interval{\llbracket}{#1}{#2}{\llbracket}}
+
+
+%%% decorated delimiters
+\providecommand*\kset[2]{\k@ensuremath{\kbrace{{#1}\k@setmid{#2}}}}
+\providecommand*\kfamily[2]{\k@ensuremath{\kbrace{#1}_{#2}}}
+\providecommand*\kseries[2]{\k@ensuremath{\kparen{#1}_{#2}}}
+\providecommand*\kproba[3][P]{\k@ensuremath{{#1}\kparen{{#2}\k@probamid{#3}}}}
+
+
+
+
+%%%%%%%%%%%%%%%%%
+%%% NOTATIONS %%%
+%%%%%%%%%%%%%%%%%
+
+
+%%% ISO constants
+\providecommand*\kiunit{\k@cst{i}}
+\providecommand*\kjunit{\k@cst{j}} %TODO option
+% upright greek
+%\@ifpackagewith{inputenc}{LGR}{%
+%  \DeclareSymbolFont{upgreek}{LGR}{cmr}{m}{n}
+%  \DeclareMathSymbol{\piup}{\mathord}{upgreek}{`p}
+%  \DeclareMathSymbol{\deltaup}{\mathord}{upgreek}{`p}
+%  \providecommand*\cstpi{\piup}
+%  \providecommand*\kdelta{\deltaup}
+%}{}
+\@ifpackagewith{babel}{greek}{%
+  \providecommand*\kpi{\text{\greektext p\latintext}}
+  \providecommand*\kdelta{\text{\greektext d\latintext}}
+}{}
+\@ifpackageloaded{textalpha}{
+  \providecommand*\kpi{\text{\textpi}}
+  \providecommand*\kdelta{\text{\textdelta}}
+}{}
+\@ifpackageloaded{fourier}{
+  \providecommand*\kpi{\otherpi}
+  \providecommand*\kdelta{\otherdelta}
+}{}
+\@ifpackageloaded{upgreek}{
+  \providecommand*\kpi{\uppi}
+  \providecommand*\kdelta{\updelta}
+}{}
+\@ifpackageloaded{kpfonts}{
+  \providecommand*\kpi{\piup}
+  \providecommand*\kdelta{\deltaup}
+}{}
+\@ifpackageloaded{alphabeta}{
+  \providecommand*\kpi{\text{\pi}}
+  \providecommand*\kdelta{\text{\delta}}
+}{}
+\providecommand*\kpi{\k@cst{\pi}}
+\providecommand*\kdelta{\k@cst{\delta}}
+
+
+%%% bold sets
+\DeclareDocumentCommand\kboldset{s t+ t- m}{\k@ensuremath{%
+  \k@boldset{#4}%
+  \IfBooleanTF{#1}{\k@starpos{*}}{}%
+  \IfBooleanTF{#2}{\k@signpos{+}}{\IfBooleanTF{#3}{\k@signpos{-}}{}}%
+}}
+% primes
+\ProvideDocumentCommand\kP{}{\k@ensuremath{%
+  \k@boldset{P}%
+}}
+% natural integers
+\ProvideDocumentCommand\kN{s}{\k@ensuremath{%
+  \k@boldset{N}%
+  \IfBooleanTF{#1}{\k@starpos{*}}{}%
+}}
+% integers
+\ProvideDocumentCommand\kZ{s t+ t-}{\k@ensuremath{%
+  \k@boldset{Z}%
+  \IfBooleanTF{#1}{\k@starpos{*}}{}%
+  \IfBooleanTF{#2}{\k@signpos{+}}{\IfBooleanTF{#3}{\k@signpos{-}}{}}%
+}}
+% decimal
+\ProvideDocumentCommand\kD{s t+ t-}{\k@ensuremath{%
+  \k@boldset{D}%
+  \IfBooleanTF{#1}{\k@starpos{*}}{}%
+  \IfBooleanTF{#2}{\k@signpos{+}}{\IfBooleanTF{#3}{\k@signpos{-}}{}}%
+}}
+% rational
+\ProvideDocumentCommand\kQ{s t+ t-}{\k@ensuremath{%
+  \k@boldset{Q}%
+  \IfBooleanTF{#1}{\k@starpos{*}}{}%
+  \IfBooleanTF{#2}{\k@signpos{+}}{\IfBooleanTF{#3}{\k@signpos{-}}{}}%
+}}
+% algebraic
+\ProvideDocumentCommand\kA{s t+ t-}{\k@ensuremath{%
+  \k@boldset{A}%
+  \IfBooleanTF{#1}{\k@starpos{*}}{}%
+  \IfBooleanTF{#2}{\k@signpos{+}}{\IfBooleanTF{#3}{\k@signpos{-}}{}}%
+}}
+% real
+\ProvideDocumentCommand\kR{s t+ t-}{\k@ensuremath{%
+  \k@boldset{R}%
+  \IfBooleanTF{#1}{\k@starpos{*}}{}%
+  \IfBooleanTF{#2}{\k@signpos{+}}{\IfBooleanTF{#3}{\k@signpos{-}}{}}%
+}}
+% complex
+\ProvideDocumentCommand\kC{s}{\k@ensuremath{%
+  \k@boldset{C}%
+  \IfBooleanTF{#1}{\k@starpos{*}}{}%
+}}
+% quaternion
+\ProvideDocumentCommand\kH{s}{\k@ensuremath{%
+  \k@boldset{H}%
+  \IfBooleanTF{#1}{\k@starpos{*}}{}%
+}}
+
+
+%%% quantifiers
+\providecommand*\k@quantif[2]{#1\if\relax\detokenize{#2}\relax\else#2\mathbin{,}\fi}
+\providecommand*{\kforall}[1][]{\k@quantif{\k@forall}{#1}}
+\providecommand*{\kexists}[1][]{\k@quantif{\k@exists}{#1}}
+\providecommand*{\kexistsone}[1][]{\k@quantif{\k@existsone}{#1}}
+\providecommand*{\knexists}[1][]{\k@quantif{\k@nexists}{#1}}
+
+
+
+
+%%%%%%%%%%%%%%%%%
+%%% FUNCTIONS %%%
+%%%%%%%%%%%%%%%%%
+
+
+%%% full function definition
+\ProvideDocumentCommand{\kfuncdef}{O{b} m m m o o}{
+  \IfValueTF{#5}{%
+  \begin{array}[#1]{@{\,}r@{}r@{}c@{}l@{\,}} %TODO array? see IEEEeqnarray
+  \displaystyle {#2}\colon{} & \displaystyle {#3} & \displaystyle   {}\to{}   & \displaystyle {#4} \\
+                             & \displaystyle {#5} & \displaystyle {}\mapsto{} & \displaystyle {#6}
+  \end{array}
+  }{%
+  \begin{array}[b]{@{\,}r@{}r@{}c@{}l@{\,}} %TODO array? see IEEEeqnarray
+  {#2}\colon{} & {#3} &   {}\to{}   & {#4}
+  \end{array}
+  }
+}
+
+
+%%% argmin...
+\providecommand*\kargmin{\operatornamewithlimits{arg\,min}} % amsmath
+\providecommand*\kargmax{\operatornamewithlimits{arg\,max}}
+\providecommand*\karginf{\operatornamewithlimits{arg\,inf}}
+\providecommand*\kargsup{\operatornamewithlimits{arg\,sup}}
+\providecommand*\kminimize{\operatornamewithlimits{minimize}}
+\providecommand*\kmaximize{\operatornamewithlimits{maximize}}
+\providecommand*\kminimise{\operatornamewithlimits{minimise}}
+\providecommand*\kmaximise{\operatornamewithlimits{maximise}}
+
+
+%%% matrices
+\providecommand*\ktranspose[1]{{#1}^{\operatorname{T}}}
+\providecommand*\kadjoint[1]{{#1}^{\operatorname{*}}}
+\providecommand*\kinv[1]{{#1}^{-1}}
+
+
+%%% binary operations
+\providecommand*\kconvolve{\mathrel{\ast}}
+\providecommand*\kcompose{\mathrel{\circ}}
+
+
+%%% differential operators
+\providecommand*\k@nabla{\nabla}
+\providecommand*\k@laplace{\Delta} %TODO bug if italic uppercase Greek by default
+\providecommand*\k@dalembert{\square}
+\providecommand*\knabla{\mathop{}\!\mathbin{\k@nabla}} %TODO check spacing
+\providecommand*\klaplace{\mathop{}\!\mathbin{\k@laplace}} %TODO idem
+\providecommand*\kdalembert{\mathop{}\!\mathbin{\k@dalembert}} %TODO idem
+%\providecommand*\ttimes{${}\times{}$} %TODO text font instead of math font
+
+
+%%% complex
+\providecommand*\kRe{\operatorname{Re}}
+\providecommand*\kIm{\operatorname{Im}}
+
+%%% exp
+\newkfunc{\k@exp}{\operatorname{exp}}
+\ProvideDocumentCommand{\kexp}{s d{(}{)}}{%
+  \IfBooleanTF{#1}{%
+    \k@ensuremath{\k@cst{e}\IfValueTF{#2}{^{#2}}{}}%
+  }{%
+    \IfValueTF{#2}{\k@exp[][](#2)}{\k@exp[][]()}%
+  }%
+}
+
+
+%%% log
+\newkfunc{\k@log}{\operatorname{log}}
+\newkfunc{\k@ln}{\operatorname{ln}}
+\newkfunc{\k@lb}{\operatorname{lb}}
+\providecommand*{\klog}[1][]{\k@log[#1][]}
+\providecommand*{\kln}{\k@ln[][]}
+\providecommand*{\klb}{\k@lb[][]}
+
+
+%%% trigo
+\newkfunc{\k@sin}{\operatorname{sin}}
+\newkfunc{\k@cos}{\operatorname{cos}}
+\newkfunc{\k@tan}{\operatorname{tan}}
+\newkfunc{\k@cot}{\operatorname{cot}}
+\providecommand*{\ksin}[1][]{\k@sin[][#1]}
+\providecommand*{\kcos}[1][]{\k@cos[][#1]}
+\providecommand*{\ktan}[1][]{\k@tan[][#1]}
+\providecommand*{\kcot}[1][]{\k@cot[][#1]}
+\newkfunc{\k@sinh}{\operatorname{sinh}}
+\newkfunc{\k@cosh}{\operatorname{cosh}}
+\newkfunc{\k@tanh}{\operatorname{tanh}}
+\newkfunc{\k@coth}{\operatorname{coth}}
+\providecommand*{\ksinh}[1][]{\k@sinh[][#1]}
+\providecommand*{\kcosh}[1][]{\k@cosh[][#1]}
+\providecommand*{\ktanh}[1][]{\k@tanh[][#1]}
+\providecommand*{\kcoth}[1][]{\k@coth[][#1]}
+\newkfunc{\k@sec}{\operatorname{sec}}
+\newkfunc{\k@csc}{\operatorname{csc}}
+\providecommand*{\ksec}[1][]{\k@sec[][#1]}
+\providecommand*{\kcsc}[1][]{\k@csc[][#1]}
+
+
+%%% derivatives
+% by Claudio Beccari, TUGboat, Volume 18 (1997), No. 1
+\providecommand*{\kdiff}{\@ifnextchar^{\k@diff}{\k@diff^{}}}
+\def\k@diff^#1{%
+  \mathop{\mathrm{\mathstrut d}}%
+  \nolimits^{#1}\gobblespace%
+}
+\def\gobblespace{%
+  \futurelet\diffarg\opspace%
+}
+\def\opspace{%
+  \let\DiffSpace\!%
+  \ifx\diffarg(%
+    \let\DiffSpace\relax
+  \else
+    \ifx\diffarg[%
+      \let\DiffSpace\relax
+    \else
+      \ifx\diffarg\{%
+        \let\DiffSpace\relax
+      \fi%
+    \fi%
+  \fi%
+  \DiffSpace%
+}
+
+%TODO see espdiff package, commath package
+\providecommand*{\deriv}[3][]{%
+  \frac{\kdiff^{#1}#2}{\kdiff #3^{#1}}}
+\providecommand*{\pderiv}[3][]{%
+  \frac{\partial^{#1}#2}{\partial #3^{#1}}}
+
+%%%%%%%%%%%
+%%% EOF %%%
+%%%%%%%%%%%
+\endinput

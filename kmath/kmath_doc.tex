@@ -1,0 +1,708 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage[english]{babel}
+\usepackage{hyperref}
+\usepackage{cleveref} %TODO caps
+%\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+
+\clubpenalty=9999
+\widowpenalty=9999
+
+\usepackage{parskip}
+\usepackage{enumitem}
+\setlist{nosep}
+
+%TODO greek packages
+%\usepackage[greek,english]{babel}
+\usepackage{textalpha} % nice
+%\usepackage{upgreek}
+%\usepackage{kpfonts}
+%\usepackage{alphabeta}
+
+\usepackage{kmath}
+%\knesteddelim
+
+\input{doc_cmd}
+
+%%% Title
+\title{The \kmath package}% \\\large [\kmisc distribution]}
+\author{Antoine Basset}
+\date{Version 0.9}
+
+\begin{document}
+\sloppy
+\maketitle
+
+
+%%%%%%%%%%%%%%%%
+%%% ABSTRACT %%%
+%%%%%%%%%%%%%%%%
+\vfill
+\begin{abstract}
+\kmath provides commands to
+1) save time when writing mathematical papers and
+2) correctly typeset mathematical expressions, which are neither part of the standard {\LaTeX} math commands, nor yet implemented by the American Mathematical Society (\AmS).
+This is a {\textbeta} version of the package, which is not intended to public distribution;
+if you read this file, you are part of the very select group of happy testers, thank you for your feedback!
+\end{abstract}
+\vfill
+
+
+%%%%%%%%%%%%%
+%%% INTRO %%%
+%%%%%%%%%%%%%
+\section*{Introduction}
+
+\kmath defines a few commands to ease the writing of {\LaTeX} documents containing mathematical content:
+\begin{description}
+\item[nice and smart delimiters] (\cref{sec-delim}),
+which adapt to their content size;
+\item[classical notation] (\cref{sec-notation})
+such as constants (e.g., $\kexp*(-\kiunit\kpi)$), bold sets (e.g., \kR*+), and other operators (e.g., $\kargmin_{a\in A} f(a)$);
+\item[math macro definition] (\cref{ssec-kmacro}),
+analog to {\LaTeX} \verb|\newcommand|,
+but the defined macro can be used in text-mode and math-mode;
+\item[function definition] (\cref{ssec-kfunc}),
+a macro which may (or not) take arguments in parentheses, as well as sub- and superscripts before the argument%
+{\newkfunc{\myfunc}{f}%
+,e.g., \myfunc[i][2](\dfrac{1}{x}).
+}
+\end{description}
+
+While all the defined commands work in math-mode (between \verb|$|'s, in equations, etc.), some of them are very often utilized in sentences;
+these commands can be used directly in text-mode, as stated later in this document.
+
+Usage of \kmath is extremely basic:
+\begin{kcode}
+\verb|\usepackage[|%
+\textit{options}%
+\verb|]{|%
+{\emphverb|kmath|}%
+\verb|}|
+\end{kcode}
+where \textit{options} are described hereafter and summarized in \cref{sec-options}.
+
+\vfill
+\pagebreak
+\tableofcontents
+\pagebreak
+
+
+%%%%%%%%%%%%%%
+%%% DELIMS %%%
+%%%%%%%%%%%%%%
+\section{Delimiters (parentheses \& co.)}
+\label{sec-delim}
+
+\subsection{Problem statement}
+\label{ssec-delim-bug}
+
+{\LaTeX} provides a set of delimiters
+(produced with commands \verb|\left| and \verb|\right|)
+which adapt to their content size, as shown bellow.
+\begin{kdemo*}{c}{c}
+\phantom{\tt left}\verb|(\frac{1}{x})|\phantom{\tt right} & $(\dfrac{1}{x})$ \\[2ex]
+\verb|\left(\frac{1}{x}\right)| & $\left(\dfrac{1}{x}\right)$ \\
+\end{kdemo*}
+
+However, the spacing is not consistent with simple parentheses.
+For example, compare the following:\nobreak
+\begin{kdemo*}{l}{l}
+\verb|\sin(x)| & $\sin(x)$ \\
+\verb|\sin\left(x\right)| & $\sin\left(x\right)$ \\
+\end{kdemo*}
+As you see, spurious space has been added between ``$\sin$'' and ``$($''.
+The well-known package \verb|mleftright| was intended to correct this issue, but some improvements can still be done.
+Relying on \verb|mleftright|, \kmath provides shortcuts to avoid typing \verb|\mleft| and \verb|\mright| all the document long.
+
+
+\subsection{Predefined delimiter pairs}
+\label{ssec-delim-def}
+
+Classical pairs of delimiters are obtained with predefined commands:
+\begin{kdemo*}{l}{c}
+{\emphverb|\kparen|}\verb|{x^2}| & $\kparen{x^2}$ \\
+{\emphverb|\kbrace|}\verb|{x^2}| & $\kbrace{x^2}$ \\
+{\emphverb|\kbracket|}\verb|{x^2}| & $\kbracket{x^2}$ \\
+{\emphverb|\kangle|}\verb|{x^2}| & $\kangle{x^2}$ \\
+{\emphverb|\kfloor|}\verb|{x^2}| & $\kfloor{x^2}$ \\
+{\emphverb|\kceil|}\verb|{x^2}| & $\kceil{x^2}$ \\
+%{\emphverb|\klcorner|}\verb|{x^2}| & $\klcorner{x^2}$ \\ %TODO bug
+%{\emphverb|\kucorner|}\verb|{x^2}| & $\kucorner{x^2}$ \\ %TODO bug
+{\emphverb|\kvbar|}\verb|{x^2}| & $\kvbar{x^2}$ \\
+{\emphverb|\kvvbar|}\verb|{x^2}| & $\kvvbar{x^2}$ \\
+\end{kdemo*}
+If empty, the delimiters will not display, that is \verb|\kparen{}| produces nothing!
+
+\rmq[Advice --]{
+Use the \kmath delimiters even in the simplest cases, as
+1) they will ensure that every open delimiter is later closed
+-- and vice versa --,
+2) the inner expression may become more complex in the next revision of your document,
+and
+3) you can easily change the type of delimiters when reviewing the document.
+}
+
+\pagebreak %TODO
+In the case of nested delimiters, it is often preferred to have them grow gradually.
+To this end, use command {\emphverb|\knesteddelim|}, which can be reverted with {\emphverb|\kdefaultdelim|}.
+\begin{kdemo*}{@{}l}{cc@{}}
+\multicolumn{1}{c}{} &
+Default style & Nested style \\
+\hline
+\verb|\kparen{\kparen{|...\verb|\kparen{x}|...\verb|}}| &
+$\kparen{\kparen{\kparen{\kparen{\kparen{\kparen{x}}}}}}$ &
+\knesteddelim
+\rule{0pt}{6ex}$\kparen{\kparen{\kparen{\kparen{\kparen{\kparen{x}}}}}}$ \\
+\end{kdemo*}
+
+\subsection{Your own delimiters}
+\label{ssec-delim-own}
+
+If the proposed set of delimiters is not enough, you can still define your own ones using the {\emphverb|\kdelim|} command.
+A short but adequate example:
+\begin{kdemo*}{l}{l}
+{\emphverb|\kdelim(|}\verb|{0,1}|{\emphverb|]|} &
+$\kdelim( {0,1} ]$ \\[1ex]
+{\emphverb|\kdelim.|}\verb|{\frac{\partial f}{\partial x}}|{\emphverb+|+}\verb|_0| &
+$\kdelim. {\dfrac{\partial f}{\partial x}} |_0$ \\
+\end{kdemo*}
+You noticed the former example is an interval, whose typing will be eased by a dedicated macro...
+
+\subsection{Intervals}
+\label{ssec-interv}
+
+The four types of intervals are defined.
+The ``open delimiter'' is an outward bracket ($]$) by default,
+but a parenthesis can be used instead with package option {\emphverb|intervparen|}.
+Also, the comma delimiter can be changed to semicolon (;) with option {\emphverb|intervsemicolon|}.
+\begin{kdemo*}{l}{cc}
+\multicolumn{1}{c}{} & Bracket & Parenthesis \\
+\hline
+{\emphverb|\kintervcc|}\verb|{a}{b}| &
+\kintervcc{a}{b} & \kintervcc{a}{b} \\
+{\emphverb|\kintervoo|}\verb|{a}{b}| &
+\kintervoo{a}{b} & $\kparen{a,b}$ \\
+{\emphverb|\kintervco|}\verb|{a}{b}| &
+\kintervco{a}{b} & $\kdelim[{a,b})$ \\
+{\emphverb|\kintervoc|}\verb|{a}{b}| &
+\kintervoc{a}{b} & $\kdelim({a,b}]$ \\
+\end{kdemo*}
+As you probably understood, {\emphverb|c|} (resp. {\emphverb|o|}) stands for ``closed'' (resp. ``open'').
+
+\rmq{Intervals can be used both in math- and text-mode.}
+
+%Similarly, we provide commands for integer intervals:
+%\begin{kdemo*}{l}{c}
+%{\emphverb|\kintcc|}\verb|{a}{b}| &
+%\kintcc{a}{b} \\
+%{\emphverb|\kintoo|}\verb|{a}{b}| &
+%\kintoo{a}{b} \\
+%{\emphverb|\kintoc|}\verb|{a}{b}| &
+%\kintoc{a}{b} \\
+%{\emphverb|\kintco|}\verb|{a}{b}| &
+%\kintco{a}{b} \\
+%\end{kdemo*}
+
+\pagebreak %TODO
+\subsection{Decorated delimiters}
+\label{ssec-cond}
+
+Relying on \kmath delimiters, commands are provided to quickly typeset indexed series, indexed family, conditional set, and conditional probability.
+\begin{kdemo}{l}{l}
+Indexed series &
+{\emphverb|\kseries|}\verb|{u_n}{n>0}| & $\kseries{u_n}{n>0}$ \\
+Indexed family &
+{\emphverb|\kfamily|}\verb|{u_n}{n>0}| & $\kfamily{u_n}{n>0}$ \\
+Conditional set &
+{\emphverb|\kset|}\verb|{u_n}{n>0}| & $\kset{u_n}{n>0}$ \\
+Conditional probability &
+{\emphverb|\kproba|}\verb|{A}{B}| & $\kproba{A}{B}$ \\
+\end{kdemo}
+
+The middle delimiter of the set can be changed for colon ($\colon$) or comma (${}\mathbin{,}{}$) with package option {\emphverb|setcolon|} or {\emphverb|setcomma|}.
+
+As for $\kproba{A}{B}$, ``$P$'' is the default value of an optional parameter, so that
+{\emphverb|\kproba[|}\verb|p|{\emphverb|]|}\verb|{A}{B}|
+yields \kproba[p]{A}{B}.
+
+\rmq{All these commands can be used in math- or text-mode.}
+
+
+\subsection{Breakable list}
+\label{ssec-list}
+
+Sometimes,~never-ending~lists~are~typed~in~text~mode,~e.g.,~%
+$\mleft\{1, 1, 3, 3, 9, 9, 27, 27,..., 3^{\kfloor{\frac{N}{2}}}\mright\}$
+is obviously too long to fit in the previous line.
+
+Unfortunately, while variable size delimiters are preferable, \verb|\left| and \verb|\right| or \verb|\mleft| and \verb|\mright| forbid line breaks.
+
+On the contrary,
+{\emphverb|\kbrace*|} %\verb|{|\textit{content}\verb|}|
+allows for typesetting breakable lists, so
+\kbrace*{1,1,3,3,9,9,27,27,...,3^{\kfloor{\frac{N}{2}}}}
+no longer overfills the hbox!
+
+This example is merely obtained with:
+\begin{kcode}
+{\emphverb|\kbrace*|}%
+\verb|{1,1,3,3,9,9,27,27,...,3^{\kfloor{\frac{N}{2}}}}|
+\end{kcode}
+
+
+If you want to avoid breaking the line between 9 and 9, add braces: \verb|{9,9}|.
+
+Breakable versions of other delimiter pairs introduced in \cref{ssec-delim-def}
+are defined as starred commands
+{\emphverb|\kbrace*|},
+{\emphverb|\kbracket*|},
+{\emphverb|\kangle*|},
+{\emphverb|\kfloor*|},
+{\emphverb|\kceil*|},
+{\emphverb|\kvbar*|} and
+{\emphverb|\kvvbar*|}.
+
+To define your own breakable delimiters, {\emphverb|\klist|} is analogous to {\emphverb|\kdelim|}.
+
+\rmq{As opposed to unstarred versions of \cref{ssec-delim-def}, these commands are available in text mode.}
+
+
+%%%%%%%%%%%%%%%%%
+%%% NOTATIONS %%%
+%%%%%%%%%%%%%%%%%
+\pagebreak %TODO
+\section{Classical notation}
+\label{sec-notation}
+
+%%% Constants
+\subsection{Constants}
+\label{ssec-constants}
+
+As opposed to previous standards (up to ISO~31), the latest mathematical style standard (ISO~80000-2) proposes to use upright font to typeset mathematical constants, such as the base of the natural logarithm $\kexp*$ or the imaginary unit $\kiunit$ (or $\kjunit$ in physics).
+Naturally, \kmath provides appropriate macros, summarized below.
+\begin{kdemo*}{l}{cc}
+\multicolumn{1}{l}{} & ISO~31-11 & ISO~80000-2 \\
+\hline
+{\emphverb|\kexp*|} & $e$ & $\kexp*$ \\
+{\emphverb|\kiunit|}\verb|,|{\emphverb|\kjunit|} & $i,j$ & $\kiunit,\kjunit$ \\
+{\emphverb|\kpi|} & $\pi$ & $\kpi$ \\
+\end{kdemo*}
+However, if you prefer the old, italic, fashion, you can switch back to ISO~31 notation with package option {\emphverb|cstit|}.
+%\begin{kcode}
+%\verb|\usepackage[|{\emphverb|cstit|}\verb|]{kmath}|
+%\end{kcode}
+%In this case, why would you use a command while \verb|e| would be enough?
+%Because if you change your mind, you just need to remove the option, and every constant will be typeset upright.
+
+\rmq[Warning --]{
+The upright pi symbol is not part of the standard {\LaTeX} math fonts, but is enabled by some packages: more on that in \cref{sec-dependencies}.
+}
+
+%%% Sets
+\subsection{Bold sets}
+\label{ssec-sets}
+
+Classical bold sets are defined both in print and blackboard styles, as depicted below.
+\begin{kdemo}{l}{cc}
+\multicolumn{2}{c}{} & Print & Blackboard \\
+\hline
+%Primes &
+%{\emphverb|\kP|} & \kP & $\mathbb{P}$ \\
+Natural integers &
+{\emphverb|\kN|} & \kN & $\mathbb{N}$ \\
+Integers &
+{\emphverb|\kZ|} & \kZ & $\mathbb{Z}$ \\
+Decimal numbers &
+{\emphverb|\kD|} & \kD & $\mathbb{D}$ \\
+Rational numbers &
+{\emphverb|\kQ|} & \kQ & $\mathbb{Q}$ \\
+Algebraic numbers &
+{\emphverb|\kA|} & \kA & $\mathbb{A}$ \\
+Real numbers &
+{\emphverb|\kR|} & \kR & $\mathbb{R}$ \\
+Complex numbers &
+{\emphverb|\kC|} & \kC & $\mathbb{C}$ \\
+Quaternions &
+{\emphverb|\kH|} & \kH & $\mathbb{H}$ \\
+\end{kdemo}
+If you prefer the blackboard bold style, use the {\emphverb|setbb|} package option:
+\begin{kcode}
+\verb|\usepackage[|{\emphverb|setbb|}\verb|]{kmath}|
+\end{kcode}
+
+\pagebreak %TODO
+When mathematically sound, modifiers {\emphverb|*|}, {\emphverb|+|} and {\emphverb|-|} can be added to restrict the set:
+\begin{kdemo*}{l}{l}
+\verb|\kR| & \kR \\
+\verb|\kR|{\emphverb|*|} & \kR* \\
+\verb|\kR|{\emphverb|+|}\verb|,\kR|{\emphverb|-|} & \kR+, \kR- \\
+\verb|\kR|{\emphverb|*+|}\verb|,\kR|{\emphverb|*-|} & \kR*+, \kR*- \\
+\end{kdemo*}
+The position of the star and sign can be changed to bottom or top with options {\emphverb|setstarb|} or {\emphverb|setsignt|}, respectively.
+Those options are exclusive.
+\begin{kdemo*}{l}{l}
+\raggedright
+\verb|\usepackage[|{\emphverb|setstarb|}\verb|]{kmath}| & $\kR_{*+}$ \\
+\verb|\usepackage[|{\emphverb|setsignt|}\verb|]{kmath}| & $\kR^{*+}$ \\
+\verb|\usepackage[setstarb,setsignt]{kmath}| & doesn't compile \\
+\end{kdemo*}
+
+%\subsubsection*{Your own bold set}
+
+Yet, you can also define your own bold set with {\emphverb|\kboldset|}:
+\begin{kdemo*}{l}{l}
+{\emphverb|\kboldset|}\verb|{K}| & \kboldset{K} \\
+{\emphverb|\kboldset*|}\verb|{K}| & \kboldset*{K} \\
+{\emphverb|\kboldset+|}\verb|{K}| & \kboldset+{K} \\
+{\emphverb|\kboldset*+|}\verb|{K}| & \kboldset*+{K} \\
+\end{kdemo*}
+
+\rmq{Bold sets can be used both in math- and text-mode.}
+
+\subsection{Quantifiers}
+
+Quantifiers ($\forall,\exists$) are considered as simple symbols in {\LaTeX}, so spacing is not properly handled.
+\kmath provides quantifiers with two syntax styles:
+followed by a comma (default behavior), or surrounded by parentheses as in logic.
+To switch to the logic syntax, set package option {\emphverb|quantifparen|}.
+\begin{kdemo*}{l}{rr}
+\multicolumn{1}{c}{} &
+\multicolumn{1}{c}{Standard} & \multicolumn{1}{c}{Logic} \\
+\hline
+{\emphverb|\kforall|}\verb|[x\in\kR] P| &
+$\kforall[x\in\kR] P$ & $\mathop{}\kparen{\kforall x\in\kR}\mathop{} P$ \\
+{\emphverb|\kexists|}\verb|[x\in\kR] P| &
+$\kexists[x\in\kR] P$ & $\mathop{}\kparen{\kexists x\in\kR}\mathop{} P$ \\
+{\emphverb|\knexists|}\verb|[x\in\kR] P| &
+$\knexists[x\in\kR] P$ & $\mathop{}\kparen{\knexists x\in\kR}\mathop{} P$ \\
+{\emphverb|\kexists|}\verb|[x\in\kR] P| &
+$\kexistsone[x\in\kR] P$ & $\mathop{}\kparen{\kexistsone x\in\kR}\mathop{} P$ \\
+\end{kdemo*}
+
+The argument of those functions is optional; \verb|\kforall x| merely produces $\kforall x$ without comma or parentheses.
+
+%%% Functions
+\subsection{Operators and functions}
+
+%The following math operators are provided, which do not need explanations...
+\newcommand{\note}[1]{*${}^{#1}$}
+\begin{kdemo}{l}{cl}
+Transpose matrix &
+{\emphverb|\ktranspose|}\verb|{A}| &
+$\phantom{{}^\text{T}}\ktranspose{A}$ & \note1 \\
+Adjoint matrix &
+{\emphverb|\kadjoint|}\verb|{A}| &
+$\phantom{{}^*}\kadjoint{A}$ \\
+Inverse &
+{\emphverb|\kinv|}\verb|{x}| &
+$\;\kinv{x}$ \\
+Kronecker delta &
+{\emphverb|\kdelta|}\verb|_{ij}| &
+$\phantom{{}_{ij}}\kdelta_{ij}$ & \note2 \\
+Convolution operator &
+\verb|f |{\emphverb|\kconvolve|}\verb| g| &
+$f \kconvolve g$ \\
+Composition operator &
+\verb|f |{\emphverb|\kcompose|}\verb| g| &
+$f \kcompose g$ \\
+Nabla operator &
+{\emphverb|\knabla|}\verb| f| &
+$\knabla f$ & \note3 \\
+Laplace operator &
+{\emphverb|\klaplace|}\verb| f| &
+$\klaplace f$ & \note3 \\
+d'Alembert operator &
+{\emphverb|\kdalembert|}\verb| f| &
+$\kdalembert f$ \\
+Real part &
+{\emphverb|\kRe|}\verb| z| &
+$\kRe{z}$ & \note4 \\
+Imaginary part &
+{\emphverb|\kIm|}\verb| z| &
+$\kIm{z}$ & \note4\\
+\end{kdemo}
+\begin{itemize}
+\item[\note1]
+Package option {\emphverb|bourbakit|} yields the Bourbaki prescript notation for {\emphverb|\ktranspose|} (${}^\text{t}A$)
+\item[\note2]
+As \verb|\kpi|, {\emphverb|\kdelta|} will produce a roman (upright) symbol only if an adequate package is loaded before \kmath (see \cref{sec-dependencies}).
+\item[\note3]
+in order to be consistent with the d'Alembert operator,
+\raisebox{\depth}{$\bigtriangledown$} and $\bigtriangleup$ can be used (instead of $\knabla$ and $\klaplace$) with package option {\emphverb|dalembert|}.
+\item[\note4]
+Old standard, Gothic versions of $\kRe$ and $\kIm$ ($\Re$ and $\Im$) are used if package option {\emphverb|reimgoth|} is passed.
+\end{itemize}
+
+
+To lighten writing, trigonometric functions are extended with two optional arguments:
+the fist one, between brackets, corresponds to an exponent;
+the second one, between parentheses, corresponds to the actual function argument.
+\begin{kdemo*}{l}{l}
+{\emphverb|\ksin|} & \ksin \\
+{\emphverb|\ksin|}\verb|[2]| & \ksin[2] \\
+{\emphverb|\ksin|}\verb|(x)| & \ksin(x) \\
+{\emphverb|\ksin|}\verb|[2](x)| & \ksin[2](x)
+\end{kdemo*}
+
+Commands {\emphverb|\kcos|}, {\emphverb|\ktan|}, {\emphverb|\kcot|},
+{\emphverb|\ksec|}, {\emphverb|\kcsc|},
+{\emphverb|\ksinh|}, {\emphverb|\kcosh|}, {\emphverb|\ktanh|}, and {\emphverb|\kcoth|} are also provided.
+
+\pagebreak %TODO
+Exponential and logarithm functions are defined as follows:
+\begin{kdemo*}{l}{l}
+{\emphverb|\kexp|} & \kexp \\
+{\emphverb|\kexp|}\verb|(x)| & \kexp(x) \\
+{\emphverb|\kexp*|} & \kexp* \\
+{\emphverb|\kexp*|}\verb|(x)| & \kexp*(x) \\
+{\emphverb|\klog|} & \klog \\
+{\emphverb|\klog|}\verb|[b]| & \klog[b] \\
+{\emphverb|\klog|}\verb|(x)| & \klog(x) \\
+{\emphverb|\klog|}\verb|[b](x)| & \klog[b](x) \\
+{\emphverb|\kln|}\verb|(x)| & \kln(x) \\
+{\emphverb|\klb|}\verb|(x)| & \klb(x)
+\end{kdemo*}
+
+Writing the full definition of a function is painful at best, so \kmath provides a nice command for that purpose, whose syntax is:
+\begin{kcode}
+{\emphverb|\kfuncdef|}%
+\verb|[|%
+\textit{pos}%
+\verb|]{|%
+\textit{function}%
+\verb|}{|%
+\textit{domain}%
+\verb|}{|%
+\textit{codomain}%
+\verb|}[|%
+\textit{argument}%
+\verb|][|%
+\textit{image}%
+\verb|]|%
+\end{kcode}
+where \textit{pos} is a vertical alignment option, which can be either
+{\emphverb|b|} (bottom, default),
+{\emphverb|m|} (middle) or
+{\emphverb|t|} (top).
+\verb|b| was chosen as the default value so that the equation label is in front of the mapping definition, but that is a matter of taste.
+The effect of \textit{pos} is demonstrated bellow.
+\begin{kdemo*}{l}{lr}
+{\emphverb|\kfuncdef|}%
+\verb|{f}{E}{F}| &
+$\kfuncdef[b]{f}{E}{F}$ & (1)\\[2ex]
+{\emphverb|\kfuncdef|}%
+\verb|{f}{E}{F}[x][y]| &
+\begingroup\renewcommand{\arraystretch}{1}
+$\kfuncdef[b]{f}{E}{F}[x][y]$
+\endgroup & (1)\\[3ex]
+{\emphverb|\kfuncdef[m]|}%
+\verb|{f}{E}{F}[x][y]| &
+\begingroup\renewcommand{\arraystretch}{1}
+$\kfuncdef[m]{f}{E}{F}[x][y]$
+\endgroup & (1)\\[3ex]
+{\emphverb|\kfuncdef[t]|}%
+\verb|{f}{E}{F}[x][y]| &
+\begingroup\renewcommand{\arraystretch}{1}
+$\kfuncdef[t]{f}{E}{F}[x][y]$
+\endgroup & (1) \\
+\end{kdemo*}
+
+\rmq[Warning -- ]{No space should be added between the 3rd, 4th and 5th argument, that is,
+\verb|\kfuncdef{f}{E}{F} [x] [y]|
+will produce $\kfuncdef{f}{E}{F} [x] [y]$.}
+
+\subsection{arg\,min \textit{et alii}}
+
+The following ``subscriptable'' operators are defined:
+{\emphverb|\kargmin|},
+{\emphverb|\kargmax|},
+{\emphverb|\karginf|},
+{\emphverb|\kargsup|},
+{\emphverb|\kminimize|},
+{\emphverb|\kmaximize|},
+{\emphverb|\kminimise|}, and
+{\emphverb|\kmaximise|}.
+They have different looks in in-line and display styles.
+\begin{kdemo*}{l}{cc}
+\multicolumn{1}{c}{} & In-line & Display \\
+\hline
+{\emphverb|\kargmin|}\verb|_{x\in\kR} x^2| &
+$\kargmin_{x\in\kR} x^2$ &
+$\displaystyle\kargmin_{x\in\kR} x^2$ \\
+\end{kdemo*}
+
+
+%%%%%%%%%%%%%%
+%%% MACROS %%%
+%%%%%%%%%%%%%%
+\pagebreak %TODO
+\section{Your own mathematical macros}
+\label{sec-macros}
+
+\subsection{Math- and text-mode compatible macros}
+\label{ssec-kmacro}
+
+{\emphverb|\newkmacro|} is similar to \verb|\newcommand|, but the so-defined macro can be used both in math- and text-mode:
+\begin{kcode}
+{\emphverb|\newkmacro|}\verb|{|%
+\textit{macro}%
+\verb|}[|%
+\textit{\#arguments}%
+\verb|][|%
+\textit{default}%
+\verb|]{|%
+\textit{definition}%
+\verb|}|
+\end{kcode}
+where:
+\begin{itemize}
+\item \textit{macro}
+is the macro name, which will be used later in the document, for example \verb|\foo|;
+\item \textit{\#arguments} (optional)
+is the number of macro arguments;
+\item \textit{default} (optional)
+is the default value of the first argument;
+\item \textit{definition}
+is the actual macro definition, which will replace \verb|\foo| later in the document.
+\end{itemize}
+
+In the next example, a macro \verb|\foo| is defined.
+The macro takes one optional parameter, which is empty by default.
+Each time \verb|\foo| appears in the document, it will be replaced by $\phi$, while \verb|\foo[bar]| will be replaced by $\phi_{\text{bar}}$, either in math-mode or text-mode.
+\begin{kcode}
+%\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{l}
+{\emphverb|\newkmacro|}\verb|{\foo}[1][]{\phi_{\text{#1}}}| \\[-1ex]
+$\vdots$ \\
+\verb|\begin{document}| \\[-1ex]
+$\vdots$ \\
+\verb|Let \foo be the sum of \foo[bar] and \foo[qux]:| \\
+\verb|$\foo = \foo[bar] + \foo[qux]$.| \\[-1ex]
+$\vdots$ \\
+\verb|\end{document}| \\
+\\\hline\\
+\newkmacro{\foo}[1][]{\phi_{\text{#1}}}%
+Let \foo be the sum of \foo[bar] and \foo[qux]: $\foo=\foo[bar]+\foo[qux]$. \\
+\end{tabular}
+\end{kcode}
+
+%\pagebreak %TODO
+\subsection{Function-like macros}
+\label{ssec-kfunc}
+
+Command {\emphverb|\newkfunc|} is designed to handle mathematical functions.
+The definition syntax is simple:
+\begin{kcode}
+{\emphverb|\newkfunc|}\verb|{|%
+\textit{function}%
+\verb|}{|%
+\textit{definition}%
+\verb|}|
+\end{kcode}
+
+For the sake of originality, let us introduce a function \verb|\foo| in preambule:
+\begin{kcode}
+\verb|\newkfunc{\foo}{\phi}|
+\end{kcode}
+
+\pagebreak %TODO
+It can now be used in math- or text-mode in various ways...
+\newkfunc{\foo}{\phi}
+\begin{kdemo}{l}{l}
+With no argument &
+\verb|\foo| &
+\foo \\
+With an argument &
+\verb|\foo(\frac{1}{x})| &
+\foo(\dfrac{1}{x}) \\
+With a subscript &
+\verb|\foo[1]| &
+\foo[1] \\
+With a superscript &
+\verb|\foo[][2]| &
+\foo[][2]
+\end{kdemo}
+... which can be combined:
+\begin{kdemo*}{l}{l}
+\verb|\foo[1][2](\frac{1}{x})| &
+\foo[1][2](\dfrac{1}{x}) \\
+\end{kdemo*}
+
+\rmq[Warning --]{
+To ease writing and reading, the argument is typed between \emph{parentheses}, and not braces.
+}
+
+
+\pagebreak
+%%%%%%%%%%%%%%%
+%%% OPTIONS %%%
+%%%%%%%%%%%%%%%
+\section{Options summary}
+\label{sec-options}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{llc@{$\quad\to\quad$}c}
+Option & Description & \multicolumn{2}{c}{Sample result} \\
+\hline
+{\emphverb|intervparen|} & Use parentheses in open intervals &
+\kintervoo{\cdot}{\cdot} & $\kparen{\cdot,\cdot}$ \\
+{\emphverb|intervsemicolon|} & Use semicolon in intervals &
+\kintervcc{\cdot}{\cdot} & $\kbracket{\cdot;\cdot}$ \\
+{\emphverb|setbb|} & Blackboard style bold sets &
+\kR*+ & $\mathbb{R}^{*\phantom+}_+$ \\
+{\emphverb|setstarb|} & Star of starred sets as subscript &
+\kR*+ & $\kR_{*+}$ \\
+{\emphverb|setsignt|} & Sign of signed sets as superscript &
+\kR*+ & $\kR^{*+}$ \\
+{\emphverb|setcolon|} & Colon as middle delimiter in sets &
+$\kset{\cdot}{\cdot}$ & $\kbrace{\cdot\colon\cdot}$ \\
+{\emphverb|setcomma|} & Comma as middle delimiter in sets &
+$\kset{\cdot}{\cdot}$ & $\kbrace{\cdot\mathbin{,}\cdot}$ \\
+{\emphverb|cstit|} & Italicized mathematical constants &
+$\kexp*$ & $e$ \\
+{\emphverb|quantifparen|} & Logic style quantifiers &
+$\kforall[\cdot]\cdot$ & $\mathop{}\kparen{\kforall\cdot}\mathop{}\cdot$ \\
+{\emphverb|bourbakit|} & Prescript transposition symbol &
+$\ktranspose{A}$ & ${}^\text{t}A$ \\
+{\emphverb|dalembert|} & Light Laplace and nabla operators &
+$\Delta$ & $\bigtriangleup$ \\
+{\emphverb|reimgoth|} & Gothic real and imaginary parts &
+$\kRe$ & $\Re$ \\
+\end{tabular}
+\end{center}
+
+
+%%%%%%%%%%%%%%
+%%% INPUTS %%%
+%%%%%%%%%%%%%%
+\vfill %TODO
+\section{Dependencies}
+\label{sec-dependencies}
+
+\kmath relies on the following packages, which are automatically loaded if needed:
+\begin{itemize}
+\item \verb|amsmath|
+\item \verb|amssymb|
+\item \verb|mleftright|
+\item \verb|xparse|
+\item \verb|xspace|
+\end{itemize}
+
+Optionally, if one of the following packages is loaded \emph{before} \kmath, the upright pi (resp. delta) character will be obtained with {\emphverb|\kpi|} (resp {\emphverb|\kdelta|}).
+Otherwise, standard {\LaTeX} (italic) Greek letters will be substituted.
+\begin{itemize}
+\item \verb|babel|
+with Greek language (e.g. \verb|\usepackage[greek,english]{babel}|)
+\item \verb|textalpha|, which is used in this document
+\item \verb|upgreek|
+\item \verb|kpfonts|
+\item \verb|mathdesign|
+\item \verb|alphabeta|
+\end{itemize}
+\rmq[Warning --]{
+Appearance of $\kpi$ and $\kdelta$ may vary depending on the loaded package and document font.
+}
+
+\end{document}
