@@ -2,8 +2,8 @@
 \usepackage[latin1]{inputenc}
 \usepackage[english]{babel}
 \usepackage{hyperref}
-\usepackage{cleveref} %TODO caps
 %\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{kmath}
 
 \clubpenalty=9999
 \widowpenalty=9999
@@ -11,6 +11,7 @@
 \usepackage{parskip}
 \usepackage{enumitem}
 \setlist{nosep}
+\usepackage{cleveref} %TODO caps
 
 %TODO greek packages
 %\usepackage[greek,english]{babel}
@@ -19,7 +20,6 @@
 %\usepackage{kpfonts}
 %\usepackage{alphabeta}
 
-\usepackage{kmath}
 %\knesteddelim
 
 \input{doc_cmd}
@@ -42,8 +42,6 @@
 \kmath provides commands to
 1) save time when writing mathematical papers and
 2) correctly typeset mathematical expressions, which are neither part of the standard {\LaTeX} math commands, nor yet implemented by the American Mathematical Society (\AmS).
-This is a {\textbeta} version of the package, which is not intended to public distribution;
-if you read this file, you are part of the very select group of happy testers, thank you for your feedback!
 \end{abstract}
 \vfill
 
@@ -132,7 +130,7 @@ Classical pairs of delimiters are obtained with predefined commands:
 {\emphverb|\kvbar|}\verb|{x^2}| & $\kvbar{x^2}$ \\
 {\emphverb|\kvvbar|}\verb|{x^2}| & $\kvvbar{x^2}$ \\
 \end{kdemo*}
-If empty, the delimiters will not display, that is \verb|\kparen{}| produces nothing!
+If empty, the delimiters will not be displayed, that is \verb|\kparen{}| produces nothing!
 
 \rmq[Advice --]{
 Use the \kmath delimiters even in the simplest cases, as
@@ -145,7 +143,7 @@ and
 
 \pagebreak %TODO
 In the case of nested delimiters, it is often preferred to have them grow gradually.
-To this end, use command {\emphverb|\knesteddelim|}, which can be reverted with {\emphverb|\kdefaultdelim|}.
+This can be activated by command {\emphverb|\knesteddelim|}, and deactivated with {\emphverb|\kdefaultdelim|}.
 \begin{kdemo*}{@{}l}{cc@{}}
 \multicolumn{1}{c}{} &
 Default style & Nested style \\
@@ -160,14 +158,16 @@ $\kparen{\kparen{\kparen{\kparen{\kparen{\kparen{x}}}}}}$ &
 \label{ssec-delim-own}
 
 If the proposed set of delimiters is not enough, you can still define your own ones using the {\emphverb|\kdelim|} command.
-A short but adequate example:
+Here are a few examples:
 \begin{kdemo*}{l}{l}
 {\emphverb|\kdelim(|}\verb|{0,1}|{\emphverb|]|} &
 $\kdelim( {0,1} ]$ \\[1ex]
 {\emphverb|\kdelim.|}\verb|{\frac{\partial f}{\partial x}}|{\emphverb+|+}\verb|_0| &
 $\kdelim. {\dfrac{\partial f}{\partial x}} |_0$ \\
 \end{kdemo*}
-You noticed the former example is an interval, whose typing will be eased by a dedicated macro...
+
+Obviously, the first example is an interval, which is a very classical use case...
+Which is why we provide dedicated macros in the next subsection!
 
 \subsection{Intervals}
 \label{ssec-interv}
@@ -208,7 +208,7 @@ As you probably understood, {\emphverb|c|} (resp. {\emphverb|o|}) stands for ``c
 \subsection{Decorated delimiters}
 \label{ssec-cond}
 
-Relying on \kmath delimiters, commands are provided to quickly typeset indexed series, indexed family, conditional set, and conditional probability.
+Relying on \kmath delimiters, commands are provided to quickly typeset indexed series, indexed family, conditional set, and conditional probability:
 \begin{kdemo}{l}{l}
 Indexed series &
 {\emphverb|\kseries|}\verb|{u_n}{n>0}| & $\kseries{u_n}{n>0}$ \\
@@ -251,7 +251,7 @@ This example is merely obtained with:
 \end{kcode}
 
 
-If you want to avoid breaking the line between 9 and 9, add braces: \verb|{9,9}|.
+If you want to avoid breaking the line between 3 and 9, add inner braces: \verb|{3,9}|.
 
 Breakable versions of other delimiter pairs introduced in \cref{ssec-delim-def}
 are defined as starred commands
@@ -265,7 +265,7 @@ are defined as starred commands
 
 To define your own breakable delimiters, {\emphverb|\klist|} is analogous to {\emphverb|\kdelim|}.
 
-\rmq{As opposed to unstarred versions of \cref{ssec-delim-def}, these commands are available in text mode.}
+\rmq{As opposed to unstarred versions of \cref{ssec-delim-def}, these commands \emph{are} available in text mode.}
 
 
 %%%%%%%%%%%%%%%%%
@@ -376,7 +376,7 @@ $\kforall[x\in\kR] P$ & $\mathop{}\kparen{\kforall x\in\kR}\mathop{} P$ \\
 $\kexists[x\in\kR] P$ & $\mathop{}\kparen{\kexists x\in\kR}\mathop{} P$ \\
 {\emphverb|\knexists|}\verb|[x\in\kR] P| &
 $\knexists[x\in\kR] P$ & $\mathop{}\kparen{\knexists x\in\kR}\mathop{} P$ \\
-{\emphverb|\kexists|}\verb|[x\in\kR] P| &
+{\emphverb|\kexistsone|}\verb|[x\in\kR] P| &
 $\kexistsone[x\in\kR] P$ & $\mathop{}\kparen{\kexistsone x\in\kR}\mathop{} P$ \\
 \end{kdemo*}
 
@@ -508,11 +508,7 @@ $\kfuncdef[t]{f}{E}{F}[x][y]$
 \endgroup & (1) \\
 \end{kdemo*}
 
-\rmq[Warning -- ]{No space should be added between the 3rd, 4th and 5th argument, that is,
-\verb|\kfuncdef{f}{E}{F} [x] [y]|
-will produce $\kfuncdef{f}{E}{F} [x] [y]$.}
-
-\subsection{arg\,min \textit{et alii}}
+\subsection{arg min \textit{et alii}}
 
 The following ``subscriptable'' operators are defined:
 {\emphverb|\kargmin|},

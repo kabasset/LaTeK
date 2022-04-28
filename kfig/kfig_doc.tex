@@ -1,7 +1,7 @@
 \documentclass[12pt,a4paper]{article}
 \usepackage[latin1]{inputenc}
-\usepackage[frenchb]{babel}
-\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+%\usepackage[T1]{fontenc}
 \usepackage{graphicx}
 \usepackage{amssymb}
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
@@ -15,7 +15,7 @@
 
 
 \author{Antoine Basset}
-\title{Documentation \Kfig}
+\title{\Kfig package documentation}
 
 
 \begin{document}
@@ -23,159 +23,18 @@
 
 \begin{figure}[h]
 \begin{kfig}{3}
-\rule{\kimgw}{.5\kimgw} &
-\rule{\kimgw}{.5\kimgw} &
-\rule{\kimgw}{.5\kimgw}
-\kskip
-\rule{\kimgw}{.5\kimgw} &
-\rule{\kimgw}{.5\kimgw} &
-\rule{\kimgw}{.5\kimgw}
-\end{kfig}
-\caption{Une figure avec des images identiques}
-\end{figure}
-
-\begin{figure}[h]
-\begin{kfig*}{3,1,2}
-\rule{3\kimgh}{\kimgh} &
-\rule{1\kimgh}{\kimgh} &
-\rule{2\kimgh}{\kimgh}
-\end{kfig*}
-\kskip
-\begin{kfig*}{1.5,4}
-\rule{1.5\kimgh}{\kimgh} &
-\rule{4\kimgh}{\kimgh}
-\end{kfig*}
-\caption{Une figure avec des images de tailles différentes}
-\end{figure}
-
-\begin{figure}[h]
-\begin{kfig*}{5,1.5}
-\rule{5\kimgh}{\kimgh} &
-Blabla:
-bla, blabla bla.
-Bla bla blabla, blablablabla!
-Blaaa blabla, bla bla bla blabla...
-\end{kfig*}
-\caption{Une figure avec du texte}
-\end{figure}
-
-\pagebreak
-
-\section{Images identiques}
-
-L'environnement {\emphverb|kfig|} permet de créer des figures contenant plusieurs images remplissant entièrement la largeur de la page (ou pas!).
-Toutes les images auront la même largeur.
-La syntaxe est la suivante:
-\begin{kcode}
-\verb|\begin{|%
-{\emphverb|kfig|}%
-\verb|}[|%
-\emph{largeur de la figure}%
-\verb|]{|%
-\emph{nombre d'images}%
-\verb|}|%
-\end{kcode}
-où
-\emph{largeur de la figure} est la largeur totale allouée à la figure, \verb|\linewidth| par défaut, \\
-et
-\emph{nombre d'images} est le nombre d'images par ligne.
-
-L'environnement {\emphverb|kfig|} est basé sur \verb|tabular|, de sorte qu'une figure de largeur 3~cm contenant 27~311 images par ligne, et deux lignes, serait codée ainsi:
-\begin{kcode}
-\begin{minipage}{.8\linewidth}
-\verb|\begin{|%
-{\emphverb|kfig|}%
-\verb|}[3cm]{27311}|%
-
-\begin{tabular}{l@{\texttt{~\&~}}l@{\texttt{~\&~}}l@{\texttt{~\&~}}l}
-\emph{première image} &
-\emph{image 2} &
-... &
-\emph{image 27~311} \quad {\emphverb|\kskip|} \\
-\emph{image 27~312} &
-\emph{image 27~313} &
-... &
-\emph{dernière image}
-\end{tabular}
-
-\verb|\end{|%
-{\emphverb|kfig|}%
-\verb|}|%
-\end{minipage}
-\end{kcode}
-où {\emphverb|\kskip|} permet de créer un espace vertical égal aux espaces horizontaux entre les images.
-Ces espacements sont contrôlés par la longueur {\emphverb|\kimgsep|}.
-
-Typiquement, \emph{première image}, \emph{image 2}... sont des \verb|\includegraphics|.
-Dans ce cas, il est inutile de préciser la taille de l'image, qui sera ajustée automatiquement à la largeur de la colonne {\emphverb|\kimgw|} (=\verb|\linewidth| soit dit en passant).
-
-
-\section{Images de tailles différentes}
-
-Afin de créer des figures contenant plusieurs images de tailles différentes, \Kfig définit l'environnement {\emphverb|kfig*|}, utilisé comme suit:
-\begin{kcode}
-\verb|\begin{|%
-{\emphverb|kfig*|}%
-\verb|}[|%
-\emph{largeur de la figure}%
-\verb|]{|%
-\emph{liste des rapports largeur/hauteur des images}%
-\verb|}|%
-\end{kcode}
-Ici, les images auront des largeurs différentes, mais une hauteur commune, {\emphverb|\kimgh|}.
-
-Ainsi, pour créer une figure contenant deux images, dont la première a un format carré, tandis que la seconde a une largeur 27~311 fois plus grande que sa hauteur, on écrira:
-\begin{kcode}
-\begin{minipage}{.8\linewidth}
-\verb|\begin{|%
-{\emphverb|kfig*|}%
-\verb|}{1,27311}|%
-
-\begin{tabular}{l@{\texttt{~\&~}}l}
-\emph{première image} &
-\emph{seconde image}
-\end{tabular}
-
-\verb|\end{|%
-{\emphverb|kfig*|}%
-\verb|}|%
-\end{minipage}
-\end{kcode}
-
-De nouveau, si vous utilisez \verb|\includegraphics| pour insérer vos images, la hauteur commune {\emphverb|\kimgh|} est imposée par défaut.
-
-\rmq{
-Le nombre de colonnes est limité à 8 pour des raisons techniques, ce qui devrait être suffisant, sauf si vous êtes plus fou que moi.
-Dans ce cas, débrouillez-vous tout seul...
-}
-
-
-\section{Texte}
-
-Si vous n'êtes pas rassasié, et souhaitez remplacer une image par du texte, comme dans le dernier exemple... faites-le!
-Rien ne vous empêche d'insérer autre chose qu'une image.
-Les colonnes des environnements {\emphverb|kfig|} et {\emphverb|kfig*|} sont de type \verb|p|.
-
-
-\section{Exemples}
-
-Pour l'inspiration, voici le code correspondant aux trois exemples introductifs.
-
-\begin{verbatim}
-\begin{figure}
-\begin{kfig}{3}
   \rule{\kimgw}{.5\kimgw} &
   \rule{\kimgw}{.5\kimgw} &
   \rule{\kimgw}{.5\kimgw}
-  \kskip
+\kskip
   \rule{\kimgw}{.5\kimgw} &
   \rule{\kimgw}{.5\kimgw} &
   \rule{\kimgw}{.5\kimgw}
 \end{kfig}
-\caption{Une figure avec des images identiques}
+\caption{A figure with identical images}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[h]
 \begin{kfig*}{3,1,2}
   \rule{3\kimgh}{\kimgh} &
   \rule{1\kimgh}{\kimgh} &
@@ -186,18 +45,156 @@ Pour l'inspiration, voici le code correspondant aux trois exemples introductifs.
   \rule{1.5\kimgh}{\kimgh} &
   \rule{4\kimgh}{\kimgh}
 \end{kfig*}
-\caption{Une figure avec des images de tailles différentes}
+\caption{A figure with images of different shapes}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[h]
 \begin{kfig*}{5,1.5}
   \rule{5\kimgh}{\kimgh} &
-  Blabla:
-  bla, blabla bla.
-  Bla bla blabla, blablablabla!
-  Blaaa blabla, bla bla bla blabla...
+  The quick brown fox jumps over the lazy dog.
+  Sphinx of black quartz, judge my vow.
 \end{kfig*}
-\caption{Une figure avec du texte}
+\caption{A figure with text}
+\end{figure}
+
+\pagebreak
+
+\section{Identical images}
+
+Environment {\emphverb|kfig|} is used to create figures made of several images of identical width.
+By default, the figure width is exactly that of the page.
+
+Syntax is as follows:
+\begin{kcode}
+\verb|\begin{|%
+{\emphverb|kfig|}%
+\verb|}[|%
+\emph{figure width}%
+\verb|]{|%
+\emph{image count}%
+\verb|}|%
+\end{kcode}
+where
+\emph{figure width} is the total figure width, or \verb|\linewidth| by default,
+and
+\emph{image count} is the number of images per row.
+
+Environment {\emphverb|kfig|} is based on \verb|tabular|, such that a figure of width 8~cm made of 4 images per row, and two rows, would be made this way:
+\begin{kcode}
+\begin{minipage}{.8\linewidth}
+\verb|\begin{|%
+{\emphverb|kfig|}%
+\verb|}[8cm]{4}|%
+
+\begin{tabular}{l@{\texttt{~\&~}}l@{\texttt{~\&~}}l@{\texttt{~\&~}}l}
+\emph{image 1} &
+\emph{image 2} &
+\emph{image 3} &
+\emph{image 4} \quad {\emphverb|\kskip|} \\
+\emph{image 5} &
+\emph{image 6} &
+\emph{image 7} &
+\emph{image 8}
+\end{tabular}
+
+\verb|\end{|%
+{\emphverb|kfig|}%
+\verb|}|%
+\end{minipage}
+\end{kcode}
+where {\emphverb|\kskip|} creates a vertical space identical to horizontal spaces between images.
+Their length is controlled by {\emphverb|\kimgsep|}.
+
+Typically, \emph{image 1}, \emph{image 2}... are \verb|\includegraphics|'.
+In this case, the image size is automatically adapted to the column width {\emphverb|\kimgw|} (=\verb|\linewidth| by the way).
+
+
+\section{Images of different shapes}
+
+Figures which contain images of varying shapes are built with environment {\emphverb|kfig*|} as follows:
+\begin{kcode}
+\verb|\begin{|%
+{\emphverb|kfig*|}%
+\verb|}[|%
+\emph{figure width}%
+\verb|]{|%
+\emph{list of width/height image ratios}%
+\verb|}|%
+\end{kcode}
+Here, images have different width but the same height: {\emphverb|\kimgh|}.
+
+For example, to produce a figure containing a square image and a rectangle image of ratio 1.5, write:
+\begin{kcode}
+\begin{minipage}{.8\linewidth}
+\verb|\begin{|%
+{\emphverb|kfig*|}%
+\verb|}{1,1.5}|%
+
+\begin{tabular}{l@{\texttt{~\&~}}l}
+\emph{square image} &
+\emph{rectangle image}
+\end{tabular}
+
+\verb|\end{|%
+{\emphverb|kfig*|}%
+\verb|}|%
+\end{minipage}
+\end{kcode}
+
+Again, when using \verb|\includegraphics| to insert images, the common height, {\emphverb|\kimgh|}, is automatically set.
+
+\rmq{
+The maximum number of columns in this environment is 8 for technical reasons.
+This should be enough in 99\% of the cases.
+If you are that 1\% left, help yourself!
+}
+
+
+\section{Text}
+
+It is possible to fill the {\emphverb|kfig|} and {\emphverb|kfig*|} cells with anything else than images, e.g. text like in the last example.
+The columns in environments {\emphverb|kfig|} and {\emphverb|kfig*|} are of type \verb|p|.
+
+
+\section{Examples}
+
+As an inspiration, here is the code of the three examples figures.
+
+\begin{verbatim}
+\begin{figure}[h]
+\begin{kfig}{3}
+  \rule{\kimgw}{.5\kimgw} &
+  \rule{\kimgw}{.5\kimgw} &
+  \rule{\kimgw}{.5\kimgw}
+\kskip
+  \rule{\kimgw}{.5\kimgw} &
+  \rule{\kimgw}{.5\kimgw} &
+  \rule{\kimgw}{.5\kimgw}
+\end{kfig}
+\caption{A figure with identical images}
+\end{figure}
+
+\begin{figure}[h]
+\begin{kfig*}{3,1,2}
+  \rule{3\kimgh}{\kimgh} &
+  \rule{1\kimgh}{\kimgh} &
+  \rule{2\kimgh}{\kimgh}
+\end{kfig*}
+\kskip
+\begin{kfig*}{1.5,4}
+  \rule{1.5\kimgh}{\kimgh} &
+  \rule{4\kimgh}{\kimgh}
+\end{kfig*}
+\caption{A figure with images of different shapes}
+\end{figure}
+
+\begin{figure}[h]
+\begin{kfig*}{5,1.5}
+  \rule{5\kimgh}{\kimgh} &
+  The quick brown fox jumps over the lazy dog.
+  Sphinx of black quartz, judge my vow.
+\end{kfig*}
+\caption{A figure with text}
 \end{figure}
 \end{verbatim}
 
